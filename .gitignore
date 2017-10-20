@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 # =============== #
 # Unity generated #
 # =============== #
@@ -46,8 +44,3 @@ ehthumbs.db
 Corridor/Library/ShaderCache/
 Corridor/Library/metadata/
 =======
-Library
-Library\*
-Temp
-Temp\*
->>>>>>> d4c0348ffc300e02c42ce3258c92f4efd1d1ec56
