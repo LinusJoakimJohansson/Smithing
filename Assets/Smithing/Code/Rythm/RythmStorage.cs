@@ -3,23 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
-public class RythmAnalyzer {
+public class RythmStorage {
 
 	const string FOLDER = @"\Output\Rythm\";
 	const string FILE = "Analyzed.txt";
-	AudioClip _clip;
-	AudioSource _source;
+	AudioProcessor _source;
 
-	int _sampleCount;
-	int _timeSamples;
-	float _seconds;
-
-	public void Init (AudioSource source) {
+	float _startTime;
+	List<float> _beats = new List<float>();
+	public void Init (AudioProcessor source) {
 		_source = source;
+		_source.onBeat.AddListener(CollectData);
 		CreateFolder();
 		ClearFile();
-		_sampleCount = _source.clip.samples;
-		_seconds = _source.clip.length;
 	}
 
 	void CreateFolder() {
@@ -37,34 +33,36 @@ public class RythmAnalyzer {
 		}
 	}
 
-	public void SyncTime() {
-		_timeSamples = _source.timeSamples;
+	public void SetStartTime() {
+		_startTime = Time.time;
 	}
 
 	public void CollectData() {
-		float[] samples = new float[16]; 
-		_source.GetOutputData(samples, 0);
-		WriteDataToFile(samples);
+		_beats.Add(Time.time - (_startTime));
 	}
 
-	public void WriteDataToFile(float[] data) {
-		string output = "";
+	public void WriteDataToFile() {
+		System.Text.StringBuilder sb = new System.Text.StringBuilder();
 		//if (System.IO.File.Exists(Application.dataPath + FOLDER + "Analyzed.txt")) {
 		//	System.IO.File.AppendAllText(Application.dataPath + FOLDER +"Analyzed.txt", output);
 		//}
-		output += System.Environment.NewLine + Time().ToString() +  " [";
-		for (int i = 0; i < data.Length; i++) { 
-			output += data[i] + ",";
+		for (int i = 0; i < _beats.Count; i++){
+			sb.Append( _beats[i] + ":");
 		}
-		output += "]";
 		//System.IO.File.WriteAllText(Application.dataPath + FOLDER + "Analyzed.txt", output);
-		System.IO.File.AppendAllText(Application.dataPath + FOLDER + FILE, output);
+		System.IO.File.AppendAllText(Application.dataPath + FOLDER + FILE, sb.ToString());
 	}
 
-	float Time () {
-		float percent = (float)_timeSamples/(float)_sampleCount;
-		float time = percent*_seconds;
-		Debug.Log (percent + "Time passed: " + time);
-		return time;
+	public static List<float> LoadBeatsForSong(){
+		if (!System.IO.File.Exists(Application.dataPath + FOLDER + FILE)) {
+			return null;
+		}
+		string file = System.IO.File.ReadAllText(Application.dataPath + FOLDER + FILE);	
+		string[] beats = file.Split(':');
+		List<float> ret = new List<float>();
+		for (int i = 0; i < beats.Length; i++){
+			ret.Add(float.Parse(beats[i]));
+		}
+		return ret;
 	}
 }

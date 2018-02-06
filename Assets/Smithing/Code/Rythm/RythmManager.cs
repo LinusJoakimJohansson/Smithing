@@ -6,29 +6,36 @@ public class RythmManager : OverridableMonoBehaviour {
 
 	// Use this for initialization
 
-	public AudioSource Source;
-	public AudioClip Clip;
+	[SerializeField]
+	private  AudioSource _source;
 
-	RythmAnalyzer _analyzer;
+	[SerializeField]
+	private  AudioClip _clip;
+	[SerializeField]
+	private  AudioProcessor _processor;
+	RythmStorage _storage;
+	private bool _started = false;
 	void Start () {
-		Source.clip = Clip;
-		_analyzer = new RythmAnalyzer();
-		_analyzer.Init(Source);
+		_source.clip = _clip;
+		_storage = new RythmStorage();
+		_storage.Init(_processor);
 	}
 
 	public void StartPlaying() {
-		Source.Play();
+		_source.Play();
+		_started = true;
 	}
 
 	public void StopPlaying() {
-		Source.Stop();
+		_source.Stop();
+		_started = false;
 	}
 	
 	// Update is called once per frame
 	public override void FixedUpdateMe () {
-		if (Source.isPlaying) {
-			_analyzer.SyncTime();
-			_analyzer.CollectData();
+		if (!_source.isPlaying && _started) {
+			_storage.WriteDataToFile();
+			_started = false;
 		}
 	}
 }
